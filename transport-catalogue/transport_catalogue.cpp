@@ -5,19 +5,20 @@
 namespace transport {
 namespace catalogue {
 
-void TransportCatalogue::AddStop(std::string name, geo::Coordinates coords) {
+void TransportCatalogue::AddStop(const std::string& name, geo::Coordinates coords) {
     stops_[name] = {name, coords};
 }
 
-void TransportCatalogue::AddBus(std::string name, std::vector<std::string> stops) {
+void TransportCatalogue::AddBus(const std::string& name, const std::vector<std::string>& stops) {
     buses_[name] = {name, stops};
+    auto* bus_ptr = &buses_[name];
     for (const std::string& stop : stops) {
-        stop_to_buses_[stop].insert(name);
+        stop_to_buses_[stop].insert(bus_ptr);
     }
 }
 
-std::optional<TransportCatalogue::BusStats> TransportCatalogue::GetBusStats(std::string name) const {
-    auto it = buses_.find(name);
+std::optional<TransportCatalogue::BusStats> TransportCatalogue::GetBusStats(std::string_view name) const {
+    auto it = buses_.find(std::string(name));
     if (it == buses_.end()) {
         return std::nullopt; // Маршрут не найден
     }
@@ -33,7 +34,7 @@ std::optional<TransportCatalogue::BusStats> TransportCatalogue::GetBusStats(std:
     int num_stops = stops.size();
     
     // Количество уникальных остановок
-    std::unordered_set<std::string> unique_stops(stops.begin(), stops.end());
+    std::set<std::string> unique_stops(stops.begin(), stops.end());
     int unique_count = unique_stops.size();
     
     // Длина маршрута
@@ -50,13 +51,13 @@ std::optional<TransportCatalogue::BusStats> TransportCatalogue::GetBusStats(std:
     return BusStats{num_stops, unique_count, route_length};
 }
 
-std::optional<const std::unordered_set<std::string>*> TransportCatalogue::GetBusesByStop(std::string_view stop_name) const {
+std::optional<const std::set<const BusRoute*, BusRoutePtrComparator>*> TransportCatalogue::GetBusesByStop(std::string_view stop_name) const {
     if (stops_.count(std::string(stop_name)) == 0) {
         return std::nullopt; // Остановка не найдена
     }
     auto it = stop_to_buses_.find(std::string(stop_name));
     if (it == stop_to_buses_.end() || it->second.empty()) {
-        static const std::unordered_set<std::string> empty_set;
+        static const std::set<const BusRoute*, BusRoutePtrComparator> empty_set;
         return &empty_set;
     }
     return &it->second;

@@ -1,32 +1,13 @@
-#include <iostream>
-#include <string>
-
 #include "input_reader.h"
 #include "stat_reader.h"
+
+#include <string>
+#include <iostream>
 
 using namespace transport;
 
 int main() {
     catalogue::TransportCatalogue catalogue;
-
-    int base_request_count;
-    std::cin >> base_request_count >> std::ws;
-
-    {
-        input::InputReader reader;
-        for (int i = 0; i < base_request_count; ++i) {
-            std::string line;
-            std::getline(std::cin, line);
-            reader.ParseLine(line);
-        }
-        reader.ApplyCommands(catalogue);
-    }
-
-    int stat_request_count;
-    std::cin >> stat_request_count >> std::ws;
-    for (int i = 0; i < stat_request_count; ++i) {
-        std::string line;
-        std::getline(std::cin, line);
-        output::ParseAndPrintStat(catalogue, line, std::cout);
-    }
+    input::ProcessBaseRequests(catalogue, std::cin);
+    output::ProcessStatRequests(catalogue, std::cin, std::cout);
 }

@@ -2,6 +2,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <iostream>
 
 #include "geo.h"
 #include "transport_catalogue.h"
@@ -44,6 +45,8 @@ std::string_view Trim(std::string_view str);
 std::vector<std::string_view> Split(std::string_view string, char delim);
 std::vector<std::string_view> ParseRoute(std::string_view route);
 geo::Coordinates ParseCoordinates(std::string_view str);
+
+void ProcessBaseRequests(catalogue::TransportCatalogue& catalogue, std::istream& input);
 
 } // namespace input
 } // namespace transport

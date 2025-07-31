@@ -125,5 +125,18 @@ void InputReader::ApplyCommands([[maybe_unused]] catalogue::TransportCatalogue& 
     }
 }
 
+void ProcessBaseRequests(catalogue::TransportCatalogue& catalogue, std::istream& input) {
+    int base_request_count;
+    input >> base_request_count >> std::ws;
+
+    InputReader reader;
+    for (int i = 0; i < base_request_count; ++i) {
+        std::string line;
+        std::getline(input, line);
+        reader.ParseLine(line);
+    }
+    reader.ApplyCommands(catalogue);
+}
+
 } // namespace input
 } // namespace transport

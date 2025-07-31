@@ -9,11 +9,11 @@
 namespace transport {
 namespace output {
 
-void ParseAndPrintStat(const catalogue::TransportCatalogue& tansport_catalogue, std::string_view request, std::ostream& output) {
+void ParseAndPrintStat(const catalogue::TransportCatalogue& transport_catalogue, std::string_view request, std::ostream& output) {
     auto trimmed = input::Trim(request);
     if (trimmed.substr(0, 4) == "Bus ") {
         std::string bus_name = std::string(trimmed.substr(4));
-        auto stats = tansport_catalogue.GetBusStats(bus_name); // Исправлено с catalogue на tansport_catalogue
+        auto stats = transport_catalogue.GetBusStats(bus_name);
         if (stats) {
             output << "Bus " << bus_name << ": " 
                    << stats->num_stops << " stops on route, "
@@ -24,20 +24,28 @@ void ParseAndPrintStat(const catalogue::TransportCatalogue& tansport_catalogue, 
         }
     } else if (trimmed.substr(0, 5) == "Stop ") {
         std::string stop_name = std::string(trimmed.substr(5));
-        auto result = tansport_catalogue.GetBusesByStop(stop_name);
+        auto result = transport_catalogue.GetBusesByStop(stop_name);
         if (!result) {
             output << "Stop " << stop_name << ": not found\n";
         } else if ((*result)->empty()) {
             output << "Stop " << stop_name << ": no buses\n";
         } else {
-            std::vector<std::string> buses((*result)->begin(), (*result)->end());
-            std::sort(buses.begin(), buses.end());
             output << "Stop " << stop_name << ": buses";
-            for (const auto& bus : buses) {
-                output << " " << bus;
+            for (const auto& bus : **result) {
+                output << " " << bus->name;
             }
             output << "\n";
         }
+    }
+}
+
+void ProcessStatRequests(const catalogue::TransportCatalogue& catalogue, std::istream& input, std::ostream& output) {
+    int stat_request_count;
+    input >> stat_request_count >> std::ws;
+    for (int i = 0; i < stat_request_count; ++i) {
+        std::string line;
+        std::getline(input, line);
+        ParseAndPrintStat(catalogue, line, output);
     }
 }
 
